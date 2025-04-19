@@ -23,10 +23,12 @@ app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=30)
 
 jwt = JWTManager(app)
 
+
 @app.route('/')
 def index():
     response = jsonify({"msg": "Test successfully"})
     return response, 200
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True, port=7777)

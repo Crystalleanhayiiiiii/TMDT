@@ -60,7 +60,7 @@ def get_servicesById(id):
         return jsonify({'msg': str(e)}), 500
 
 
-@service_blueprint.route('/internet/<int:id>', methods=['GET'])
+@service_blueprint.route('/service_detail/<int:id>', methods=['GET'])
 def get_internet_service_by_id(id):
     try:
         # Lấy kết nối và cursor từ MySQL
@@ -85,10 +85,13 @@ def get_internet_service_by_id(id):
                     'Channels': row['Channels'],
                     'Area': row['Area'],
                     'Features': row['Features'],
+                    'PriceID_1_month': float(row['PriceID_1_month']),
                     'Price_1_month': float(row['Price_1_month']),
                     'Bonus_1_month': row['Bonus_1_month'],
+                    'PriceID_6_months': float(row['PriceID_6_months']),
                     'Price_6_months': float(row['Price_6_months']),
                     'Bonus_6_months': row['Bonus_6_months'],
+                    'PriceID_12_months': float(row['PriceID_12_months']),
                     'Price_12_months': float(row['Price_12_months']),
                     'Bonus_12_months': row['Bonus_12_months'],
                     'Currency': row['Currency'],
@@ -240,7 +243,7 @@ def register():
         return jsonify({"msg": str(e)}), 500
 
 
-@service_blueprint.route('/my_services', methods=['GET'])
+@service_blueprint.route('/my_subcriptions', methods=['GET'])
 @jwt_required()
 def get_my_subscriptions():
     try:
@@ -275,6 +278,7 @@ def get_my_subscriptions():
                 "EndDate": str(sub.EndDate),
                 "SpeedLimit": sub.SpeedLimit,
                 "ServiceName": service.Name,
+                "ServiceID": service.ServiceID, 
                 "Speed": service.Speed,
                 "Area": service.Area,
                 "Duration": price.Duration,
@@ -289,7 +293,7 @@ def get_my_subscriptions():
         return jsonify({"msg": str(e)}), 500
 
 
-@service_blueprint.route('/order', methods=['POST'])
+@service_blueprint.route('/order_service', methods=['POST'])
 @jwt_required()
 def create_order_and_extend_subscription():
     try:
@@ -380,3 +384,44 @@ def create_order_and_extend_subscription():
     except Exception as e:
         session.rollback()
         return jsonify({"msg": str(e)}), 500
+@service_blueprint.route('/change_account', methods=['PUT'])
+@jwt_required()
+def change_account():
+    try:
+        identity = get_jwt_identity()
+        account_id = identity.get("userID")  # Lấy từ token
+        session = db_manager.get_session()
+
+        data = request.get_json()
+        new_username = data.get("username")
+        new_password = data.get("password")
+
+        if not new_username and not new_password:
+            return jsonify({"msg": "Cần ít nhất username hoặc password để cập nhật"}), 400
+
+        # Lấy tài khoản hiện tại
+        account = session.query(Account).filter_by(AccountID=account_id).one_or_none()
+        if not account:
+            return jsonify({"msg": "Tài khoản không tồn tại"}), 404
+
+        # Kiểm tra username trùng
+        if new_username and new_username != account.username:
+            existing = session.query(Account).filter_by(username=new_username).first()
+            if existing:
+                return jsonify({"msg": "Tên đăng nhập đã tồn tại"}), 409
+            account.username = new_username
+
+        if new_password:
+            account.password = new_password  # (Gợi ý: dùng hash trong thực tế)
+
+        session.commit()
+
+        return jsonify({"msg": "Cập nhật tài khoản thành công"}), 200
+
+    except IntegrityError:
+        session.rollback()
+        return jsonify({"msg": "Tên đăng nhập đã tồn tại"}), 409
+    except Exception as e:
+        session.rollback()
+        return jsonify({"msg": str(e)}), 500
+

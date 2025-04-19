@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Gói Internet - MyService</title>
+    <link rel="stylesheet" href="/src/css/style.css" />
+    <link rel="stylesheet" href="/src/css/service.css" />
+    <script src="../src/js/layout.js" defer></script>
+    <script src="../src/js/packages.js" defer></script>
+</head>
+
+<body>
+    <div id="header"></div>
+
+    <!-- Chế độ xem profile -->
+    <div class="profile-container">
+        <h2>Thông tin cá nhân</h2>
+
+        <div class="profile-card">
+            <div class="profile-avatar">
+                <img src="/src/assets/image/avt_default.jpg" alt="Avatar người dùng">
+            </div>
+
+            <div class="profile-details" id="profile-view">
+                <p><strong>Họ tên:</strong> <span id="fullname"></span></p>
+                <p><strong>Email:</strong> <span id="email"></span></p>
+                <p><strong>Số điện thoại:</strong> <span id="phone"></span></p>
+                <p><strong>Giới tính:</strong> <span id="gender"></span></p>
+                <p><strong>Ngày sinh:</strong> <span id="birthdate"></span></p>
+                <p><strong>Địa chỉ:</strong> <span id="address"></span></p>
+                <button id="edit-profile-btn">Chỉnh sửa thông tin</button>
+            </div>
+
+        </div>
+        <!-- Chế độ chỉnh sửa -->
+        <div class="profile-details" id="profile-edit" style="display: none;">
+            <p><strong>Họ tên:</strong> <input type="text" id="input-fullname" /></p>
+            <p><strong>Email:</strong> <input type="email" id="input-email" /></p>
+            <p><strong>Số điện thoại:</strong> <input type="text" id="input-phone" /></p>
+            <p><strong>Giới tính:</strong>
+                <select id="input-gender">
+                    <option value="Nam">Nam</option>
+                    <option value="Nữ">Nữ</option>
+                    <option value="Khác">Khác</option>
+                </select>
+            </p>
+            <p><strong>Ngày sinh:</strong> <input type="date" id="input-dob" /></p>
+            <p><strong>Địa chỉ:</strong> <input type="text" id="input-address" /></p>
+
+            <button id="save-profile-btn">Lưu</button>
+            <button id="cancel-profile-btn">Hủy</button>
+        </div>
+    </div>
+
+
+    <div id="footer"></div>
+
+    <script src="/src/js/login_popup.js" defer></script>
+    <script src="/src/js/login.js" defer></script>
+    <script src="/src/js/info.js" defer></script>
+</body>
+
+</html>
+
+<style>
+    .profile-container {
+        max-width: 800px;
+        margin: 40px auto;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .profile-container h2 {
+        text-align: center;
+        color: #003366;
+        margin-bottom: 30px;
+    }
+
+    .profile-card {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 30px;
+    }
+
+    .profile-avatar img {
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 2px solid #ddd;
+    }
+
+    .profile-details {
+        flex: 1;
+    }
+
+    .profile-details p {
+        font-size: 16px;
+        margin: 10px 0;
+        color: #333;
+    }
+
+    .profile-details strong {
+        width: 150px;
+        display: inline-block;
+        color: #555;
+    }
+
+    #edit-profile-btn {
+        margin-top: 20px;
+        padding: 10px 20px;
+        background-color: #005bbb;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: background 0.3s ease;
+    }
+
+    #edit-profile-btn:hover {
+        background-color: #004999;
+    }
+
+    @media (max-width: 600px) {
+        .profile-card {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .profile-details strong {
+            width: auto;
+        }
+    }
+
+    /* === Phần chỉnh sửa === */
+    #profile-edit input,
+    #profile-edit select {
+        font-size: 16px;
+        padding: 8px 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        width: 100%;
+        max-width: 400px;
+        margin-top: 4px;
+        box-sizing: border-box;
+        transition: border 0.3s ease;
+    }
+
+    #profile-edit input:focus,
+    #profile-edit select:focus {
+        border-color: #005bbb;
+        outline: none;
+    }
+
+    #profile-edit p {
+        display: flex;
+        flex-direction: column;
+        margin: 12px 0;
+        color: #333;
+    }
+
+    #save-profile-btn,
+    #cancel-profile-btn {
+        margin-right: 10px;
+        margin-top: 20px;
+        padding: 10px 20px;
+        font-size: 15px;
+        font-weight: 600;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+    }
+
+    #save-profile-btn {
+        background-color: #007bff;
+        color: white;
+    }
+
+    #save-profile-btn:hover {
+        background-color: #005bbb;
+    }
+
+    #cancel-profile-btn {
+        background-color: #ccc;
+        color: #333;
+    }
+
+    #cancel-profile-btn:hover {
+        background-color: #aaa;
+    }
+</style>

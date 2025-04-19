@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Gói Internet - MyService</title>
+    <link rel="stylesheet" href="/src/css/style.css" />
+    <link rel="stylesheet" href="/src/css/service.css" />
+    <script src="/src/js/layout.js" defer></script>
+    <script src="/src/js/packages.js" defer></script>
+    <script src="/src/js/login_popup.js" defer></script>
+
+    <style>
+        form.change-account-form {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        form.change-account-form label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        form.change-account-form input[type="text"],
+        form.change-account-form input[type="password"] {
+            width: 100%;
+            padding: 10px 12px;
+            margin-bottom: 16px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            transition: border 0.2s;
+        }
+
+        form.change-account-form input:focus {
+            border-color: #007BFF;
+            outline: none;
+        }
+
+        form.change-account-form button {
+            background: #007BFF;
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        form.change-account-form button:hover {
+            background: #0056b3;
+        }
+
+        form.change-account-form .btn-cancel {
+            background-color: #e0e0e0;
+            color: #333;
+            border: none;
+            padding: 10px 20px;
+            font-size: 15px;
+            font-weight: 500;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        form.change-account-form .btn-cancel:hover {
+            background-color: #ccc;
+            color: #000;
+        }
+
+        #result-message {
+            margin-top: 15px;
+            text-align: center;
+            font-weight: bold;
+            color: #d9534f;
+            /* mặc định đỏ */
+        }
+    </style>
+
+</head>
+
+<body>
+    <div id="header"></div>
+    <form class="change-account-form" id="change-account-form">
+        <label for="username">Tên đăng nhập mới:</label>
+        <input type="text" class="username-new" id="username_new" name="username" placeholder="Tên đăng nhập mới"
+            required>
+
+        <label for="new-password">Mật khẩu mới:</label>
+        <input type="password" class="new-password" id="new-password" name="new-password" required>
+
+        <label for="confirm-password">Nhập lại mật khẩu mới:</label>
+        <input type="password" class="confirm-password" id="confirm-password" name="confirm-password" required>
+
+        <button type="submit" id="submit-btn">Cập nhật</button>
+        <button type="button" class="btn-cancel" id="cancel-btn">Hủy</button>
+    </form>
+
+    <div id="result-message"></div>
+
+    <div id="footer"></div>
+    <script src="/src/js/login.js" defer></script>
+    <script src="/src/js/change_account.js" defer></script>
+</body>
+
+</html>

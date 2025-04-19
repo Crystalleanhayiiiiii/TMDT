@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+
+  <!-- Bootstrap CSS CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+  <!-- Swiper CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+
+  <!-- Custom style -->
+  <style>
+    .banner-header {
+      background: linear-gradient(to bottom right, #b30000, #a10000);
+      color: white;
+      padding: 80px 20px 100px;
+      text-align: center;
+      position: relative;
+      border-bottom-left-radius: 100% 70%;
+      border-bottom-right-radius: 100% 70%;
+    }
+
+    .combo-title {
+      font-weight: bold;
+      font-size: 2.2rem;
+    }
+
+    .combo-subtitle {
+      font-size: 1.2rem;
+      color: #333;
+      margin-top: -60px;
+      text-align: center;
+    }
+
+    .swiper {
+      padding: 40px 0;
+    }
+
+    .swiper-slide {
+      height: auto !important;
+    }
+
+    .swiper-button-next,
+    .swiper-button-prev {
+      color: #d71920;
+    }
+
+    .swiper-pagination {
+      position: relative;
+      margin-top: 10px;
+    }
+
+    .card-combo .card-header {
+      background: #b30000;
+      color: white;
+      font-weight: bold;
+      text-align: center;
+      padding: 12px;
+    }
+
+    .btn-red {
+      background-color: #d71920;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      font-weight: bold;
+      width: 100%;
+      transition: 0.3s;
+    }
+
+    .btn-red:hover {
+      background-color: #f08080;
+    }
+  </style>
+  <meta charset="UTF-8">
+  <title>Gói Internet - MyService</title>
+  <link rel="stylesheet" href="/src/css/style.css" />
+  <link rel="stylesheet" href="/src/css/service.css" />
+  <script src="../src/js/layout.js" defer></script>
+  <script src="../src/js/packages.js" defer></script>
+</head>
+
+<body>
+  <div id="header"></div>
+  <!-- Banner -->
+  <div class="banner-header">
+    <div class="container">
+      <nav class="mb-3">
+        <span>Trang chủ</span> > <span>Internet/Truyền hình</span> > <strong>Internet</strong>
+      </nav>
+      <h1 class="combo-title">ĐĂNG KÝ INTERNET CHO <br> NGÔI NHÀ CỦA BẠN</h1>
+    </div>
+  </div>
+  <main class="internet-packages">
+    <section class="package-grid" id="internet-packages">
+      <!-- Các gói cước sẽ được thêm vào đây bằng JS -->
+    </section>
+  </main>
+
+  <div id="footer"></div>
+
+  <script src="/src/js/login_popup.js" defer></script>
+  <script src="/src/js/login.js" defer></script>
+</body>
+
+</html>

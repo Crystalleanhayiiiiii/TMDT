@@ -1,0 +1,39 @@
+<header class="main-header">
+  <div class="logo">
+    <img src="\src\assets\image\logo.png" alt="Logo" height="40" />
+  </div>
+  <nav class="nav-bar">
+    <a href="/index.html">Trang chủ</a>
+    <div class="dropdown">
+      <a href="#" class="dropbtn">Gói cước ▾</a>
+      <div class="dropdown-content">
+        <a href="/public/packages.html?category=1">Internet</a>
+        <a href="/public/packages.html?category=2">Truyền hình</a>
+        <a href="/public/packages.html?category=3">Combo</a>
+      </div>
+    </div>
+    <a href="\public\about.html">Giới thiệu</a>
+    <a href="#">Liên hệ</a>
+    <a href="#">Hỗ trợ</a>
+    <a href="/public/my_subcription.html">My Service</a>
+    <!-- Nút đăng nhập / đăng ký -->
+    <div id="auth-section">
+      <button class="login-btn">Đăng nhập</button>
+      <button class="resig-btn">Đăng ký</button>
+    </div>
+
+    <!-- Dropdown người dùng (ẩn ban đầu) -->
+    <div id="user-dropdown" class="user-dropdown" style="display: none;">
+      <div class="user-info">
+        <p id="user-name"></p>
+        <p id="user-phone"></p>
+      </div>
+      <ul class="user-menu">
+        <li><a href="\public\form\change_account.html">Đổi mật khẩu</a></li>
+        <li><a href="/public/my_info.html">Thông tin cá nhân</a></li>
+        <li><a href="#" id="logout-btn">Đăng xuất</a></li>
+      </ul>
+    </div>
+  </nav>
+
+</header>

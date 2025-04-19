@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Gói Internet - MyService</title>
+    <link rel="stylesheet" href="/src/css/style.css" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f2f2f2;
+        }
+
+        .package-detail-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 30px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #005bbb;
+        }
+
+        ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        li {
+            margin: 6px 0;
+        }
+
+        .btn-register {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 24px;
+            background-color: #ff6600;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-register:hover {
+            background-color: #e05500;
+        }
+
+        @media (max-width: 600px) {
+            .package-detail-container {
+                padding: 20px;
+                margin: 20px;
+            }
+
+            .btn-register {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+
+
+</head>
+
+<body>
+    <!-- Phần header được load bằng JS -->
+    <div id="header"></div>
+
+    <!-- Phần nội dung chi tiết gói -->
+    <div class="package-detail-container">
+        <div id="service-detail">Đang tải thông tin gói...</div>
+    </div>
+
+    <!-- Phần footer được load bằng JS -->
+    <div id="footer"></div>
+
+    <!-- Gọi các file JS -->
+    <script src="../src/js/layout.js" defer></script>
+    <script src="../src/js/package_detail.js" defer></script>
+    <script src="/src/js/login_popup.js" defer></script>
+    <script src="/src/js/login.js" defer></script>
+</body>

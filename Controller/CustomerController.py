@@ -424,4 +424,108 @@ def change_account():
     except Exception as e:
         session.rollback()
         return jsonify({"msg": str(e)}), 500
+# register custommer
+@service_blueprint.route('/register_customer', methods=['POST'])
+def register_customer():
+    try:
+        data = request.get_json()
+
+        required_fields = ['username', 'password', 'firstName', 'lastName', 'birthDate',
+                           'gender', 'phone', 'email', 'address']
+        # Kiểm tra đủ trường
+        if not all(field in data and data[field] for field in required_fields):
+            return jsonify({"msg": "Vui lòng nhập đầy đủ thông tin bắt buộc"}), 400
+
+        session = db_manager.get_session()
+
+        # Kiểm tra username đã tồn tại chưa
+        existing = session.query(Account).filter_by(username=data['username']).first()
+        if existing:
+            return jsonify({"msg": "Tên đăng nhập đã tồn tại"}), 409
+        # Kiểm tra trùng số điện thoại
+        existing_phone = session.query(Customer).filter_by(Phone=data['phone']).first()
+        if existing_phone:
+            return jsonify({"msg": "Số điện thoại đã được sử dụng"}), 409
+
+
+        # ✅ Tạo Account mới (gán sẵn RoleID là Customer role ID = 3)
+        customer_role = session.query(Role).filter_by(RoleName="Customer").first()
+        if not customer_role:
+            return jsonify({"msg": "Role 'Customer' không tồn tại"}), 500
+
+        new_account = Account(
+            username=data['username'],
+            password=data['password'],  
+            RoleID=customer_role.RoleID
+        )
+        session.add(new_account)
+        session.flush()  # Lấy được AccountID
+
+        # ✅ Tạo Customer và gán AccountID
+        new_customer = Customer(
+            FirstName=data['firstName'],
+            LastName=data['lastName'],
+            BirthDate=datetime.strptime(data['birthDate'], "%Y-%m-%d"),
+            Gender=bool(int(data['gender'])),
+            Address=data['address'],
+            Phone=data['phone'],
+            Email=data['email'],
+            AccountID=new_account.AccountID
+        )
+        session.add(new_customer)
+        session.commit()
+
+        return jsonify({"msg": "Đăng ký thành công", "CustomerID": new_customer.CustomerID}), 201
+
+    except Exception as e:
+        session.rollback()
+        return jsonify({"msg": str(e)}), 500
+# edit myifo
+@service_blueprint.route('/edit_myinfo', methods=['PUT'])
+@jwt_required()
+def update_my_info():
+    try:
+        identity = get_jwt_identity()
+        
+        customer_id = identity.get("CustomerID")
+        if not customer_id:
+            return jsonify({"msg": "Thiếu CustomerID trong token"}), 400
+
+        data = request.get_json()
+        session = db_manager.get_session()
+        #SQLAlchemy không flush bất kỳ thay đổi nào tạm thời trước khi query.
+        with session.no_autoflush:
+            customer = session.query(Customer).filter_by(CustomerID=customer_id).first()
+        if not customer:
+            return jsonify({"msg": "Không tìm thấy khách hàng"}), 404
+
+        # ✅ Cập nhật từng trường nếu có trong request
+        if "firstName" in data:
+            customer.FirstName = data["firstName"]
+        if "lastName" in data:
+            customer.LastName = data["lastName"]
+        if "phone" in data and data["phone"] != customer.Phone:
+            existing = session.query(Customer).filter(
+                Customer.Phone == data["phone"],
+                Customer.CustomerID != customer_id
+            ).first()
+            if existing:
+                return jsonify({"msg": "Số điện thoại đã được sử dụng"}), 409
+            customer.Phone = data["phone"]
+
+        if "email" in data:
+            customer.Email = data["email"]
+        if "address" in data:
+            customer.Address = data["address"]
+        if "birthDate" in data:
+            customer.BirthDate = datetime.strptime(data["birthDate"], "%Y-%m-%d")
+        if "gender" in data:
+            customer.Gender = bool(int(data["gender"]))  # "0" hoặc "1"
+
+        session.commit()
+        return jsonify({"msg": "Cập nhật thông tin thành công"}), 200
+
+    except Exception as e:
+        session.rollback()
+        return jsonify({"msg": str(e)}), 500
 

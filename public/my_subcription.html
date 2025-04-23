@@ -72,6 +72,12 @@
         .btn-red:hover {
             background-color: #f08080;
         }
+
+        main h1,
+        main h3 {
+            color: #333;
+            /* xám đậm dễ nhìn hơn đen thuần (#000) */
+        }
     </style>
     <meta charset="UTF-8">
     <title>Gói Internet - MyService</title>
@@ -92,14 +98,175 @@
             <h1 class="combo-title">QUẢN LÝ CÁC GÓI CƯỚC <br> CỦA BẠN</h1>
         </div>
     </div>
-    <main class="internet-packages">
-        <section class="package-grid" id="mysub">
-            <!-- Các gói cước sẽ được thêm vào đây bằng JS -->
+    <main class="container py-5">
+        <!-- Danh sách đơn hàng đã đặt -->
+        <section class="mb-5">
+            <h3 class="text-dark mb-3"> Danh sách đơn hàng đã đặt</h3>
+            <div class="col" id="order-list">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body d-flex flex-column justify-content-between">
+                        <!-- Header: Tên gói + trạng thái -->
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h5 class="card-title mb-1 text-primary">Fiber Super 100</h5>
+                                <p class="mb-1 text-muted" style="font-size: 14px;">Đơn hàng #12345 • Đặt ngày
+                                    12/04/2025</p>
+                            </div>
+                            <span class="badge rounded-pill bg-warning text-dark mt-1">Đang xử lý</span>
+                        </div>
+
+                        <!-- Nội dung gói -->
+                        <ul class="list-unstyled mb-3" style="font-size: 15px;">
+                            <li><i class="bi bi-clock"></i> Thời lượng: <strong>6 tháng</strong> <span
+                                    class="text-success">(Tặng 1 tháng)</span></li>
+                            <li><i class="bi bi-download"></i> Tốc độ: <strong>100Mbps</strong></li>
+                            <li><i class="bi bi-geo-alt"></i> Khu vực: <strong>Hà Nội</strong></li>
+                        </ul>
+
+                        <!-- Nút hành động -->
+                        <div class="d-flex justify-content-end flex-wrap gap-2">
+                            <a href="#" class="btn btn-sm btn-outline-primary">Xem chi tiết</a>
+                            <button class="btn btn-sm btn-success">Thanh toán</button>
+                            <button class="btn btn-sm btn-outline-danger">Hủy gói</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </section>
+
+        <hr class="my-4">
+
+        <!-- Danh sách gói dịch vụ đang sử dụng -->
+        <section>
+            <h3 class="text-dark mb-3">Gói dịch vụ đang sử dụng</h3>
+            <div class="row row-cols-1 row-cols-md-2 g-4" id="mysub">
+                <!-- JS sẽ thêm các subscription tại đây -->
+            </div>
         </section>
     </main>
+    <!-- Modal Thanh Toán -->
+    <!-- ✅ Modal Thanh Toán -->
+    <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="paymentModalLabel">Thanh toán đơn hàng</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <form id="payment-form">
+                        <input type="hidden" id="order-id" />
+
+                        <!-- ✅ Thông tin gói dịch vụ -->
+                        <div class="mb-4 border rounded p-3 bg-light">
+                            <h6 class="text-primary mb-2" id="payment-service-name">Tên gói</h6>
+                            <p class="mb-1"><strong>Thời lượng:</strong> <span id="payment-duration"></span> <span
+                                    class="text-success" id="payment-bonus"></span></p>
+                            <p class="mb-1"><strong>Giá:</strong> <span id="payment-price"></span></p>
+                            <p class="mb-1"><strong>Khu vực:</strong> <span id="payment-area"></span></p>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="payment-method" class="form-label">Hình thức thanh toán</label>
+                            <select id="payment-method" class="form-select" required>
+                                <option value="">-- Chọn phương thức --</option>
+                                <option value="Tiền mặt">Tiền mặt</option>
+                                <option value="Ví điện tử">Ví điện tử</option>
+                                <option value="Thẻ ngân hàng">Thẻ ngân hàng</option>
+                            </select>
+                        </div>
+
+                        <!-- Ví điện tử -->
+                        <div id="e-wallet-fields" class="d-none">
+                            <div class="mb-2">
+                                <label>Số điện thoại</label>
+                                <input type="text" class="form-control" id="wallet-phone" />
+                            </div>
+                            <div class="mb-2">
+                                <label>Mật khẩu</label>
+                                <input type="password" class="form-control" id="wallet-password" />
+                            </div>
+                        </div>
+
+                        <!-- Thẻ ngân hàng -->
+                        <div id="bank-fields" class="d-none">
+                            <div class="mb-2">
+                                <label>Tên ngân hàng</label>
+                                <select id="bank-name" class="form-select" required>
+                                    <option value="">-- Chọn ngân hàng --</option>
+                                    <option value="VietCombank">VietCombank</option>
+                                    <option value="Sacombank">Sacombank</option>
+                                    <option value="MB Bank">MB Bank</option>
+                                    <option value="Techcombank">Techcombank</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-2">
+                                <label>Số tài khoản</label>
+                                <input type="text" class="form-control" id="bank-account" />
+                            </div>
+                            <div class="mb-2">
+                                <label>Mật khẩu</label>
+                                <input type="password" class="form-control" id="bank-password" />
+                            </div>
+                        </div>
+
+                        <div id="payment-msg" class="alert d-none mt-2" role="alert"></div>
+                    </form>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" form="payment-form" class="btn btn-primary">Xác nhận thanh toán</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                </div>
+
+            </div>
+            <!-- 🔔 Thông báo trạng thái đơn hàng -->
+            <div id="order-status-alert" class="alert d-none px-3 py-2 mb-3" style="font-size: 15px;">
+                <i class="bi bi-info-circle-fill me-1"></i><span id="order-status-text"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal chọn lý do hủy -->
+    <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="cancelModalLabel">Hủy đơn hàng</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Bạn có chắc muốn hủy đơn hàng <strong id="cancel-order-id">#?</strong> không?</p>
+                    <label for="cancel-reason" class="form-label">Lý do hủy:</label>
+                    <input class="form-control" list="cancel-reason-list" id="cancel-reason"
+                        placeholder="Chọn hoặc nhập lý do" />
+
+                    <datalist id="cancel-reason-list">
+                        <option value="Không còn nhu cầu sử dụng">
+                        <option value="Đăng ký nhầm gói">
+                        <option value="Giá chưa phù hợp">
+                        <option value="Tìm được nhà cung cấp khác">
+                        <option value="Chất lượng không như kỳ vọng">
+                    </datalist>
+                    <div class="form-text">Lý do sẽ giúp chúng tôi cải thiện dịch vụ tốt hơn.</div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-danger" id="confirm-cancel-btn">Xác nhận hủy</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <div id="footer"></div>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/src/js/login_popup.js" defer></script>
     <script src="/src/js/login.js" defer></script>
     <script src="/src/js/my_subcriptions.js" defer></script>

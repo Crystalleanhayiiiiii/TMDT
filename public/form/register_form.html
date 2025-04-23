@@ -33,71 +33,105 @@
       border: none;
     }
   </style>
+  <link rel="stylesheet" href="/src/css/style.css" />
+  <link rel="stylesheet" href="/src/css/service.css" />
+  <script src="/src/js/layout.js" defer></script>
+  <script src="/src/js/packages.js" defer></script>
 </head>
 
 <body>
-
-  <!-- Modal đăng ký -->
-  <div class="modal fade show d-block" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel"
-    aria-modal="true" role="dialog" style="background-color: rgba(0, 0, 0, 0.4);">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content p-3 px-4">
-        <div class="modal-header border-0">
-          <h5 class="modal-title mx-auto fw-bold" id="registerModalLabel">Đăng ký tài khoản</h5>
-          <button type="button" class="btn-close position-absolute end-0 me-3" onclick="closeRegisterModal()"></button>
-        </div>
-
-        <!-- Tabs -->
-        <ul class="nav nav-tabs justify-content-center mb-3" id="registerTabs">
-          <li class="nav-item">
-            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#mobile">Internet/TV/PSTN</button>
-          </li>
-
-        </ul>
-
-        <!-- Nội dung tab -->
-        <div class="tab-content">
-          <div class="tab-pane fade show active" id="mobile">
-            <form>
-              <div class="mb-3">
-                <label class="form-label">Số điện thoại*</label>
-                <input type="text" class="form-control" placeholder="Nhập số điện thoại">
-                <div class="form-text">Số điện thoại từ 9 đến 12 kí tự</div>
-              </div>
-              <div class="mb-3 d-flex justify-content-between align-items-center">
-                <label class="form-label w-100">Mã xác thực OTP*</label>
-                <a href="#" class="text-danger small">Lấy mã OTP</a>
-              </div>
-              <input type="text" class="form-control mb-3" placeholder="Nhập mã xác thực">
-              <div class="mb-3">
-                <label class="form-label">Mật khẩu*</label>
-                <input type="password" class="form-control" placeholder="Nhập mật khẩu">
-                <div class="form-text">Mật khẩu từ 8 kí tự trở lên.</div>
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Xác nhận mật khẩu*</label>
-                <input type="password" class="form-control" placeholder="Xác nhận mật khẩu">
-              </div>
-              <p class="small text-muted">
-                Khi nhấn Đăng ký, Quý khách đã đồng ý thực hiện mọi giao dịch theo
-                <a href="#" class="text-danger">Điều khoản sử dụng</a> và
-                <a href="#" class="text-danger">Chính sách bảo mật của Viettel</a>
-              </p>
-              <div class="d-grid">
-                <button type="submit" class="btn btn-danger">Đăng ký tài khoản</button>
-              </div>
-              <div class="text-center mt-3">
-                <small>Đã có tài khoản? Quý khách muốn <a href="#" class="text-danger">Đăng nhập?</a></small>
-              </div>
-            </form>
+  <div id="header"></div>
+  <div class="tab-content">
+    <div class="tab-pane fade show active" id="mobile">
+      <form>
+        <!-- Hàng 1: Tên đăng nhập + Mật khẩu + Xác nhận mật khẩu -->
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Tên đăng nhập*</label>
+            <input type="text" name="username" class="form-control" placeholder="Tên đăng nhập" required>
           </div>
-          <div class="tab-pane fade" id="internet">
-            <p class="text-center mt-3">Tính năng đang phát triển.</p>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Mật khẩu*</label>
+            <input type="password" class="form-control" placeholder="Mật khẩu" required>
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Xác nhận mật khẩu*</label>
+            <input type="password" class="form-control" placeholder="Xác nhận mật khẩu" required>
           </div>
         </div>
-      </div>
+
+        <!-- Hàng 2: Họ và Tên -->
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Họ*</label>
+            <input type="text" name="firstName" class="form-control" placeholder="Họ" required>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Tên*</label>
+            <input type="text" name="lastName" class="form-control" placeholder="Tên" required>
+          </div>
+        </div>
+
+        <!-- Hàng 3: Ngày sinh + Giới tính + Số điện thoại -->
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Ngày sinh*</label>
+            <input type="date" name="birthday" class="form-control" required>
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Giới tính*</label>
+            <select class="form-select" required>
+              <option value="">Chọn giới tính</option>
+              <option value="Nam">Nam</option>
+              <option value="Nữ">Nữ</option>
+            </select>
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Số điện thoại*</label>
+            <input type="tel" name="phone" class="form-control" placeholder="Số điện thoại" required>
+          </div>
+        </div>
+
+        <!-- Hàng 4: Email + Địa chỉ -->
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Email*</label>
+            <input type="email" name="egmail" class="form-control" placeholder="Email" required>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Địa chỉ </label>
+            <input type="text" class="form-control" placeholder="VD: 123 Đường A, TP. HCM" list="city-list" required>
+            <datalist id="city-list">
+              <option value="Hà Nội">
+              <option value="TP. Hồ Chí Minh">
+              <option value="Đà Nẵng">
+              <option value="Cần Thơ">
+              <option value="Hải Phòng">
+            </datalist>
+          </div>
+        </div>
+
+        <!-- Điều khoản và nút đăng ký -->
+        <div class="form-check mt-2 mb-3">
+          <input class="form-check-input" type="checkbox" required>
+          <label class="form-check-label small">
+            Tôi đồng ý với
+            <a href="#" class="text-danger">Điều khoản sử dụng</a> và
+            <a href="#" class="text-danger">Chính sách bảo mật</a>
+          </label>
+        </div>
+
+        <div class="d-grid">
+          <button type="submit" class="btn btn-danger">Đăng ký tài khoản</button>
+        </div>
+
+        <div class="text-center mt-3">
+          <small>Đã có tài khoản? <a href="#" class="text-danger">Đăng nhập ngay</a></small>
+        </div>
+      </form>
     </div>
   </div>
+
 
   <!-- Script đóng modal -->
   <script>
@@ -108,6 +142,95 @@
   </script>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <div id="footer"></div>
+
+  <script src="/src/js/login_popup.js" defer></script>
+  <script src="/src/js/login.js" defer></script>
+
 </body>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const form = document.querySelector("#mobile form");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      // Lấy dữ liệu từ form theo thứ tự phần tử bạn đã dán
+      const username = form.querySelector('input[placeholder="Tên đăng nhập"]').value.trim();
+      const password = form.querySelector('input[placeholder="Mật khẩu"]').value;
+      const confirmPassword = form.querySelector('input[placeholder="Xác nhận mật khẩu"]').value;
+
+      const firstName = form.querySelector('input[placeholder="Họ"]').value.trim();
+      const lastName = form.querySelector('input[placeholder="Tên"]').value.trim();
+      const birthDate = form.querySelector('input[type="date"]').value;
+      const genderText = form.querySelector('select').value;
+      const phone = form.querySelector('input[placeholder="Số điện thoại"]').value.trim();
+      const email = form.querySelector('input[placeholder="Email"]').value.trim();
+      const address = form.querySelector('input[list="city-list"]').value.trim();
+
+      // Kiểm tra mật khẩu khớp
+      if (password !== confirmPassword) {
+        alert("⚠️ Mật khẩu không khớp!");
+        return;
+      }
+      // ✅ Kiểm tra số điện thoại: phải là chuỗi số, 10 chữ số
+      if (!/^\d{10}$/.test(phone)) {
+        alert("⚠️ Số điện thoại phải có đúng 10 chữ số!");
+        return;
+      }
+
+      // ✅ Kiểm tra đủ 18 tuổi
+      const birth = new Date(birthDate);
+      const today = new Date();
+      const age = today.getFullYear() - birth.getFullYear();
+      const m = today.getMonth() - birth.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+        age--; // chưa đến sinh nhật
+      }
+
+      if (age < 18) {
+        alert("⚠️ Bạn phải đủ 18 tuổi để đăng ký.");
+        return;
+      }
+
+      // Chuyển gender từ chuỗi sang boolean/int như backend yêu cầu
+      let gender = 1; // Nam = true (1)
+      if (genderText === "Nữ") gender = 0;
+
+      // Gửi dữ liệu đến API
+      try {
+        const res = await fetch("http://127.0.0.1:7777/register_customer", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            username,
+            password,
+            firstName,
+            lastName,
+            birthDate,
+            gender,
+            phone,
+            email,
+            address
+          })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          alert("✅ Đăng ký thành công!");
+          window.location.href = "/index.html"; // chuyển sang đăng nhập
+        } else {
+          alert("❌ " + (data.msg || "Đăng ký thất bại"));
+        }
+      } catch (error) {
+        console.error("Lỗi khi gửi yêu cầu:", error);
+        alert("❌ Không thể kết nối đến máy chủ.");
+      }
+    });
+  });
+</script>
 
 </html>

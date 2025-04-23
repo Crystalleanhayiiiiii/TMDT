@@ -92,6 +92,35 @@
       <h1 class="combo-title">ĐĂNG KÝ INTERNET CHO <br> NGÔI NHÀ CỦA BẠN</h1>
     </div>
   </div>
+  <div class="container my-4">
+    <div class="row g-3 align-items-end">
+      <!-- Tìm theo tên -->
+      <div class="col-md-4">
+        <label for="search-name" class="form-label">🔍 Tên gói</label>
+        <input type="text" id="search-name" class="form-control" placeholder="VD: Fiber Plus">
+      </div>
+      <div class="col-md-2">
+        <button id="search-btn" class="btn btn-primary w-100">Tìm kiếm</button>
+      </div>
+
+      <!-- Khoảng giá -->
+      <div class="col-md-2">
+        <label for="min-price" class="form-label">💰 Giá từ</label>
+        <input type="text" id="min-price" class="form-control price-input" placeholder="300.000">
+      </div>
+      <div class="col-md-2">
+        <label for="max-price" class="form-label">💰 Đến</label>
+        <input type="text" id="max-price" class="form-control price-input" placeholder="700.000">
+      </div>
+      <div class="col-md-2">
+        <button id="filter-btn" class="btn btn-outline-success w-100">Lọc</button>
+      </div>
+    </div>
+  </div>
+
+
+
+
   <main class="internet-packages">
     <section class="package-grid" id="internet-packages">
       <!-- Các gói cước sẽ được thêm vào đây bằng JS -->
@@ -99,6 +128,21 @@
   </main>
 
   <div id="footer"></div>
+  <script>
+    // Tự động format hàng nghìn cho input giá
+    document.addEventListener("DOMContentLoaded", () => {
+      document.querySelectorAll(".price-input").forEach(input => {
+        input.addEventListener("input", () => {
+          let value = input.value.replace(/\D/g, ""); // chỉ giữ số
+          if (value === "") {
+            input.value = "";
+            return;
+          }
+          input.value = Number(value).toLocaleString("vi-VN"); // format 1.000.000
+        });
+      });
+    });
+  </script>
 
   <script src="/src/js/login_popup.js" defer></script>
   <script src="/src/js/login.js" defer></script>

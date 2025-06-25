@@ -27,6 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
         localStorage.setItem("username", data.username);
         localStorage.setItem("fullName", data.FirstName + " " + data.LastName);
         localStorage.setItem("phone", data.Phone);
+        localStorage.setItem("email", data.Email);
         message.style.color = "green";
         message.textContent = data.msg || "Đăng nhập thành công";
 

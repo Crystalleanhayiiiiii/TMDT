@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Hỗ trợ khách hàng</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Gói Internet - MyService</title>
+    <link rel="stylesheet" href="/src/css/style.css" />
+    <link rel="stylesheet" href="/src/css/service.css" />
+    <script src="../src/js/layout.js" defer></script>
+    <script src="../src/js/packages.js" defer></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .form-section {
+            background: #fff;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="header"></div>
+    <div class="container my-5">
+        <h2 class="text-center text-primary mb-4">📩 Gửi yêu cầu hỗ trợ</h2>
+
+        <!-- Form hỗ trợ -->
+        <div class="form-section mb-5">
+            <form id="support-form">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="fullname" class="form-label">Họ và tên*</label>
+                        <input type="text" class="form-control" id="fullname" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="phone" class="form-label">Số điện thoại*</label>
+                        <input type="tel" class="form-control" id="phone" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="email" class="form-label">Email*</label>
+                        <input type="email" class="form-control" id="email" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="topic" class="form-label">Chủ đề hỗ trợ*</label>
+                        <select class="form-select" id="topic" required>
+                            <option value="">-- Chọn chủ đề --</option>
+                            <option value="order">Hỗ trợ về đơn hàng</option>
+                            <option value="package">Hỗ trợ về gói đang dùng</option>
+                            <option value="other">Khác</option>
+                        </select>
+                    </div>
+
+                    <!-- Trường nhập ID liên quan -->
+                    <div class="col-12 hidden" id="related-id-group">
+                        <label for="related-id" class="form-label" id="related-id-label">ID liên quan</label>
+                        <input type="text" class="form-control" id="related-id" placeholder="Nhập ID đơn hàng hoặc gói">
+                    </div>
+
+                    <div class="col-12">
+                        <label for="description" class="form-label">Mô tả yêu cầu hỗ trợ*</label>
+                        <textarea class="form-control" id="description" rows="5" required></textarea>
+                    </div>
+
+                    <div class="col-12 d-flex justify-content-end gap-3 mt-3">
+                        <button type="reset" class="btn btn-outline-secondary">Làm mới</button>
+                        <button type="submit" class="btn btn-primary">Gửi yêu cầu</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Danh sách yêu cầu hỗ trợ -->
+        <!-- Danh sách yêu cầu hỗ trợ -->
+        <div class="bg-white p-4 rounded shadow-sm">
+            <h4 class="mb-3 text-secondary">📋 Danh sách yêu cầu đã gửi</h4>
+            <table class="table table-bordered table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Khách hàng</th>
+                        <th>Chủ đề</th>
+                        <th>ID đơn hàng</th>
+                        <th>ID gói</th>
+                        <th>Nhân viên xử lý</th>
+                        <th>Trạng thái</th>
+                        <th>Mô tả</th>
+                        <th>Giải pháp</th>
+                        <th>Tạo lúc</th>
+                        <th>Hoàn tất lúc</th>
+                    </tr>
+                </thead>
+                <tbody id="ticket-list">
+                    <!-- Dữ liệu sẽ được thêm bằng JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+
+
+        <div id="footer"></div>
+
+        <script src="/src/js/login_popup.js" defer></script>
+        <script src="/src/js/login.js" defer></script>
+        <!-- <script src="/src/js/info.js" defer></script> -->
+        <!-- SCRIPT -->
+        <script>
+            // Xử lý khi chọn loại chủ đề
+            document.getElementById("topic").addEventListener("change", () => {
+                const topic = document.getElementById("topic").value;
+                const group = document.getElementById("related-id-group");
+                const label = document.getElementById("related-id-label");
+
+                if (topic === "order") {
+                    label.textContent = "ID đơn hàng*";
+                    group.classList.remove("hidden");
+                    document.getElementById("related-id").required = true;
+                } else if (topic === "package") {
+                    label.textContent = "ID gói đang dùng*";
+                    group.classList.remove("hidden");
+                    document.getElementById("related-id").required = true;
+                } else {
+                    group.classList.add("hidden");
+                    document.getElementById("related-id").required = false;
+                    document.getElementById("related-id").value = "";
+                }
+            });
+
+            // Đổ dữ liệu người dùng từ localStorage vào form
+            document.addEventListener("DOMContentLoaded", function () {
+                const fullName = localStorage.getItem("fullName") || "";
+                const phone = localStorage.getItem("phone") || "";
+                const email = localStorage.getItem("email") || "";
+
+                document.getElementById("fullname").value = fullName;
+                document.getElementById("phone").value = phone;
+                document.getElementById("email").value = email;
+            });
+
+            // Gửi yêu cầu hỗ trợ
+            document.getElementById("support-form").addEventListener("submit", async function (e) {
+                e.preventDefault();
+
+                const name = document.getElementById("fullname").value.trim();
+                const phone = document.getElementById("phone").value.trim();
+                const email = document.getElementById("email").value.trim();
+                const topic = document.getElementById("topic").value;
+                const relatedID = document.getElementById("related-id").value.trim();
+                const desc = document.getElementById("description").value.trim();
+
+                const token = localStorage.getItem("token");
+                if (!token) {
+                    alert("Vui lòng đăng nhập để gửi yêu cầu hỗ trợ.");
+                    return;
+                }
+
+                let subject = "";
+                let order_id = null;
+                let subscription_id = null;
+
+                if (topic === "order") {
+                    subject = "Hỗ trợ về đơn hàng";
+                    order_id = relatedID || null;
+                } else if (topic === "package") {
+                    subject = "Hỗ trợ về gói đang dùng";
+                    subscription_id = relatedID || null;
+                } else {
+                    subject = "Hỗ trợ khác";
+                }
+
+                try {
+                    const response = await fetch("http://127.0.0.1:7777/create_support_ticket", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": "Bearer " + token
+                        },
+                        body: JSON.stringify({
+                            subject: subject,
+                            description: desc,
+                            order_id: order_id,
+                            subscription_id: subscription_id
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(data.msg || "Lỗi không xác định");
+                    }
+
+                    alert("✅ " + data.msg);
+                    this.reset();
+                    document.getElementById("related-id-group").classList.add("hidden");
+
+                    // Gợi ý: gọi lại hàm loadSupportTickets() nếu muốn tự động reload bảng sau khi thêm
+                    // loadSupportTickets();
+
+                } catch (error) {
+                    console.error("Lỗi:", error);
+                    alert("❌ Không thể gửi yêu cầu: " + error.message);
+                }
+            });
+        </script>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                console.log("📦 DOM đã load, bắt đầu gọi API...");
+                loadSupportTickets();
+            });
+
+            async function loadSupportTickets() {
+                const customerID = localStorage.getItem("userID");
+                console.log("🧾 CustomerID từ localStorage:", customerID);  // ✅ In ra console
+
+                const fullName = localStorage.getItem("fullName") || "";
+                const phone = localStorage.getItem("phone") || "";
+
+                if (!customerID) {
+                    alert("⚠️ Không tìm thấy ID khách hàng. Vui lòng đăng nhập lại.");
+                    return;
+                }
+
+                try {
+                    const res = await fetch(`http://127.0.0.1:7777/support_ticket/${customerID}`);
+                    const tickets = await res.json();
+
+                    const list = document.getElementById("ticket-list");
+                    list.innerHTML = "";
+
+                    if (!Array.isArray(tickets) || tickets.length === 0) {
+                        const row = document.createElement("tr");
+                        row.innerHTML = `<td colspan="11" class="text-center text-muted">Không có yêu cầu hỗ trợ nào.</td>`;
+                        list.appendChild(row);
+                        return;
+                    }
+
+                    tickets.forEach((ticket, index) => {
+                        const row = document.createElement("tr");
+                        row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${fullName}<br><small>${phone}</small></td>
+                    <td>${ticket.Subject}</td>
+                    <td>${ticket.OrderID || "-"}</td>
+                    <td>${ticket.SubscriptionID || "-"}</td>
+                    <td>${ticket.EmployeeID || "-"}</td>
+                    <td>${formatStatus(ticket.Status)}</td>
+                    <td>${ticket.Description}</td>
+                    <td>${ticket.Resolution || "-"}</td>
+                    <td>${ticket.CreatedAt || "-"}</td>
+                    <td>${ticket.ResolvedAt || "-"}</td>
+                `;
+                        list.appendChild(row);
+                    });
+
+                } catch (err) {
+                    console.error("❌ Lỗi khi tải danh sách:", err);
+                    alert("❌ Không thể tải danh sách yêu cầu hỗ trợ.");
+                }
+            }
+
+            function formatStatus(status) {
+                switch (status) {
+                    case "open": return "🟡 Mới tạo";
+                    case "in_progress": return "🟠 Đang xử lý";
+                    case "resolved": return "🟢 Đã xử lý";
+                    case "closed": return "⚪ Đã đóng";
+                    default: return status || "-";
+                }
+            }
+        </script>
+
+
+
+
+
+</body>
+
+</html>

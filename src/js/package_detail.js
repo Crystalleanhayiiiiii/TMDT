@@ -85,7 +85,8 @@ window.addEventListener("DOMContentLoaded", () => {
                         // 👉 Chuyển trang sau khi thành công 
                         window.location.href = "/public/packages.html?category=1";
                     } else {
-                        alert("❌ " + result.msg);
+                        alert("❌ " + "Bạn chưa đăng nhập , vui lòng đăng nhập !");
+                        window.location.href = "/index.html";
                     }
 
                 } catch (error) {

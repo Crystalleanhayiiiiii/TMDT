@@ -17,11 +17,12 @@ port = os.environ.get('PORT')
 db_manager = MyConnectPro(user=user, password=password_db,
                           database=database, host=host, port=port)
 db_manager.connect()
-session_db = db_manager.get_session()
+session = db_manager.get_session()
 
 
 @login_blueprint.route('/login', methods=['POST'])
 def login():
+    session_db = db_manager.get_session()  # ✅ session mới mỗi lần
     username = request.json.get('username')
     password = request.json.get('password')
 
@@ -32,10 +33,15 @@ def login():
         # Truy vấn tài khoản người dùng
         
         client = session_db.query(Account).filter_by(username=username).one_or_none()
-        session_db.refresh(client)
-        if not client or client.password != password:
-            return jsonify({"msg": "Tên đăng nhập hoặc mật khẩu không chính xác"}), 400
-        
+        #session_db.refresh(client)
+        if not client:
+            # Tên đăng nhập không tồn tại
+            return jsonify({"msg": "Tên đăng nhập không tồn tại"}), 400
+
+        # Nếu có tài khoản, kiểm tra mật khẩu
+        if client.password != password:
+            # Sai mật khẩu
+            return jsonify({"msg": "Sai mật khẩu"}), 400
         # Truy vấn vai trò
         role = session_db.query(Role).filter_by(
             RoleID=client.RoleID).one_or_none()
@@ -56,7 +62,8 @@ def login():
                     "CustomerID": customer.CustomerID,
                     "FirstName": customer.FirstName,
                     "LastName": customer.LastName,
-                    "Phone": customer.Phone
+                    "Phone": customer.Phone,
+                    "Email": customer.Email # ✅ Thêm dòng này
                 }
 
         # Nếu là employee
@@ -69,7 +76,8 @@ def login():
                     "EmployeeID": employee.EmployeeID,
                     "FirstName": employee.FirstName,
                     "LastName": employee.LastName,
-                    "Phone": employee.Phone
+                    "Phone": employee.Phone,
+                    "Email": customer.Email  # ✅ Thêm dòng này
                 }
 
         # Tạo JWT

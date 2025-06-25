@@ -50,8 +50,9 @@ def get_servicesById(id):
                     'Name': row['Name'],
                     'Speed': row['Speed'],
                     'PriceAmount': float(row['PriceAmount']),
-                    'Area': row['area'],
-                    'Channels': row['Channels']  # Có thể là NULL
+                    'Area': row['Area'],
+                    'Channels': row['Channels'] , # Có thể là NULL
+                    'CategoryName':row['CategoryName']
                 })
 
         return jsonify(results), 200
@@ -295,95 +296,57 @@ def get_my_subscriptions():
 
 @service_blueprint.route('/order_service', methods=['POST'])
 @jwt_required()
-def create_order_and_extend_subscription():
+def create_order_only():
     try:
         identity = get_jwt_identity()
-        role = identity.get("role", "").lower()
-
-        if role != "customer":
+        if identity.get("role", "").lower() != "customer":
             return jsonify({"msg": "Chỉ khách hàng mới được đặt gói"}), 403
 
         customer_id = identity.get("CustomerID")
-        data = request.get_json()
-        price_id = data.get("price_id")
+        price_id = request.json.get("price_id")
 
         if not price_id:
             return jsonify({"msg": "Thiếu price_id"}), 400
 
         session = db_manager.get_session()
 
-        # Lấy gói cước
-        price = session.query(Price).filter_by(PriceID=price_id).one_or_none()
+        # Kiểm tra gói cước
+        price = session.query(Price).filter_by(PriceID=price_id).first()
         if not price:
             return jsonify({"msg": "Gói cước không tồn tại"}), 404
 
-        # Lấy thông tin Service để biết tốc độ
-        service = session.query(Service).filter_by(
-            ServiceID=price.ServiceID).one_or_none()
-        if service:
-            print(">> Service.Speed:", service.Speed)
-
-        speed_limit = service.Speed if service else None
-        # ✅ Tạo Order mới
-        new_order = Order(
-            CustomerID=customer_id,
-            PriceID=price_id,
-            Status="pending"
-        )
-        session.add(new_order)
-        session.flush()
-
-        # ✅ Kiểm tra xem có subscription đang active với gói này không
-        active_subscription = (
+        # Kiểm tra xem khách đã từng dùng gói dịch vụ này chưa
+        service_id = price.ServiceID
+        existing_sub = (
             session.query(Subscription)
             .join(Order, Subscription.OrderID == Order.OrderID)
             .filter(Order.CustomerID == customer_id)
-            .filter(Order.PriceID == price_id)
-            .filter(Subscription.Status == 'active')
-            .order_by(Subscription.EndDate.desc())
+            .join(Price, Order.PriceID == Price.PriceID)
+            .filter(Price.ServiceID == service_id)
             .first()
         )
 
-        duration = price.Duration + (price.BonusMonths or 0)
-        duration_days = duration * 30
+        # Nếu có → tự động duyệt
+        order_status = "approved" if existing_sub else "pending"
 
-        if active_subscription:
-            # Cộng thêm thời gian vào subscription cũ
-            active_subscription.EndDate += timedelta(days=duration_days)
-            session.commit()
-            return jsonify({
-                "msg": "Gia hạn gói thành công (và tạo Order mới)",
-                "OrderID": new_order.OrderID,
-                "SubscriptionID": active_subscription.SubscriptionID,
-                "NewEndDate": str(active_subscription.EndDate)
-            }), 200
+        # Tạo đơn hàng
+        new_order = Order(
+            CustomerID=customer_id,
+            PriceID=price_id,
+            Status=order_status
+        )
+        session.add(new_order)
+        session.commit()
 
-        else:
-            # Không có → tạo subscription mới
-            start_date = datetime.utcnow().date()
-            end_date = start_date + timedelta(days=duration_days)
-
-            new_sub = Subscription(
-                OrderID=new_order.OrderID,
-                StartDate=start_date,
-                EndDate=end_date,
-                SpeedLimit=speed_limit,
-                Status='active'
-            )
-            session.add(new_sub)
-            session.commit()
-
-            return jsonify({
-                "msg": "Đặt gói thành công và tạo Subscription mới",
-                "OrderID": new_order.OrderID,
-                "SubscriptionID": new_sub.SubscriptionID,
-                "StartDate": str(start_date),
-                "EndDate": str(end_date)
-            }), 201
+        return jsonify({
+            "msg": f"Đơn hàng đã được tạo với trạng thái: {order_status}",
+            "OrderID": new_order.OrderID
+        }), 201
 
     except Exception as e:
         session.rollback()
         return jsonify({"msg": str(e)}), 500
+
 @service_blueprint.route('/change_account', methods=['PUT'])
 @jwt_required()
 def change_account():
@@ -528,4 +491,378 @@ def update_my_info():
     except Exception as e:
         session.rollback()
         return jsonify({"msg": str(e)}), 500
+
+# my_order
+@service_blueprint.route('/my_orders', methods=['GET'])
+@jwt_required()
+def get_my_orders():
+    try:
+        identity = get_jwt_identity()
+        role = identity.get("role", "").lower()
+
+        if role != "customer":
+            return jsonify({"msg": "Chỉ khách hàng mới được phép xem đơn hàng"}), 403
+
+        customer_id = identity.get("CustomerID")
+        if not customer_id:
+            return jsonify({"msg": "Không tìm thấy CustomerID trong token"}), 400
+
+        session = db_manager.get_session()
+
+        # Lấy danh sách đơn hàng có thông tin dịch vụ và category
+        orders = (
+            session.query(Order)
+            .join(Price, Order.PriceID == Price.PriceID)
+            .join(Service, Price.ServiceID == Service.ServiceID)
+            .join(Category, Service.CategoryID == Category.CategoryID)  #  Thêm join bảng Category
+            .filter(Order.CustomerID == customer_id)
+            .order_by(Order.OrderDate.desc())
+            .all()
+        )
+
+        result = []
+        for order in orders:
+            result.append({
+                "OrderID": order.OrderID,
+                "OrderDate": order.OrderDate.strftime("%Y-%m-%d %H:%M:%S"),
+                "Status": order.Status,
+                "ServiceID":order.price.service.ServiceID,
+                "ServiceName": order.price.service.Name,
+                "Duration": order.price.Duration,
+                "BonusMonths": order.price.BonusMonths,
+                "PriceAmount": float(order.price.PriceAmount),
+                "Currency": order.price.Currency,
+                "Speed": order.price.service.Speed,
+                "Area": order.price.service.Area,
+                "Channels": order.price.service.Channels,
+                "Type": order.price.service.category.CategoryName  # Tên loại gói (Category)
+            })
+
+        return jsonify(result), 200
+
+    except Exception as e:
+        return jsonify({"msg": str(e)}), 500
+    
+#thanh toan 
+@service_blueprint.route('/pay_order', methods=['POST'])
+@jwt_required()
+def pay_and_create_subscription():
+    try:
+        identity = get_jwt_identity()
+        if identity.get("role", "").lower() != "customer":
+            return jsonify({"msg": "Chỉ khách hàng mới được thanh toán"}), 403
+
+        customer_id = identity.get("CustomerID")
+        data = request.get_json()
+
+        order_id = data.get("order_id")
+        method_name = data.get("method")
+        account_number = data.get("accountNumber")
+        password = data.get("password")
+        bank_name = data.get("bankName", None)
+
+        if not all([order_id, method_name, account_number, password]):
+            return jsonify({"msg": "Thiếu thông tin thanh toán"}), 400
+
+        session = db_manager.get_session()
+
+        # Lấy đơn hàng
+        order = session.query(Order).filter_by(OrderID=order_id, CustomerID=customer_id).first()
+        if not order:
+            return jsonify({"msg": "Đơn hàng không tồn tại hoặc không thuộc về bạn"}), 404
+        if order.Status != "approved":
+            return jsonify({"msg": "Đơn hàng của bạn phải được phê duyệt trước khi thanh toán."}), 403
+
+        order = session.query(Order).filter_by(OrderID=order_id, CustomerID=customer_id).first()
+        price = order.price
+        service = price.service
+        speed_limit = service.Speed if service else None
+
+        # Kiểm tra phương thức và thông tin thanh toán
+        method = session.query(PaymentMethod).filter_by(MethodName=method_name, Status='active').first()
+        if not method:
+            return jsonify({"msg": "Phương thức thanh toán không hợp lệ"}), 404
+
+        filters = {
+            PaymentInfo.MethodID == method.MethodID,
+            PaymentInfo.AccountNumber == account_number,
+            PaymentInfo.Password == password,
+            PaymentInfo.Status == 'active'
+        }
+        if method_name == "Thẻ Ngân Hàng":
+            filters.add(PaymentInfo.BankName == bank_name)
+
+        payment_info = session.query(PaymentInfo).filter(*filters).first()
+        if not payment_info:
+            return jsonify({"msg": "Thông tin thanh toán không hợp lệ"}), 401
+
+        # ✅ Kiểm tra Subscription cũ với gói này
+        old_sub = (
+            session.query(Subscription)
+            .join(Order)
+            .filter(Order.CustomerID == customer_id)
+            .filter(Order.PriceID == price.PriceID)
+            .filter(Subscription.Status == 'active')
+            .order_by(Subscription.EndDate.desc())
+            .first()
+        )
+
+        duration = price.Duration + (price.BonusMonths or 0)
+        duration_days = duration * 30
+
+        if old_sub:
+            old_sub.EndDate += timedelta(days=duration_days)
+            order.Status = "success"
+            session.commit()
+            
+            return jsonify({
+                "msg": "Thanh toán thành công, gia hạn Subscription",
+                "SubscriptionID": old_sub.SubscriptionID,
+                "NewEndDate": str(old_sub.EndDate),
+                "ServiceName":price.service.Name
+            }), 200
+        else:
+            start = datetime.utcnow().date()
+            end = start + timedelta(days=duration_days)
+
+            new_sub = Subscription(
+                OrderID=order.OrderID,
+                StartDate=start,
+                EndDate=end,
+                SpeedLimit=speed_limit,
+                Status='active'
+            )
+            session.add(new_sub)
+            order.Status = "success"
+            session.commit()
+            
+            return jsonify({
+                "msg": "Thanh toán thành công, đã tạo Subscription mới",
+                "SubscriptionID": new_sub.SubscriptionID,
+                "StartDate": str(start),
+                "EndDate": str(end),
+                "ServiceName":price.service.Name
+            }), 201
+
+    except Exception as e:
+        session.rollback()
+        return jsonify({"msg": str(e)}), 500
+#huy 
+@service_blueprint.route('/cancel_order', methods=['PUT'])
+@jwt_required()
+def cancel_order():
+    try:
+        identity = get_jwt_identity()
+        if identity.get("role", "").lower() != "customer":
+            return jsonify({"msg": "Chỉ khách hàng mới được hủy đơn hàng"}), 403
+
+        data = request.get_json()
+        order_id = data.get("order_id")
+        reason = data.get("reason", "").strip()
+
+        if not order_id:
+            return jsonify({"msg": "Thiếu order_id"}), 400
+
+        customer_id = identity.get("CustomerID")
+        session = db_manager.get_session()
+
+        order = session.query(Order).filter_by(OrderID=order_id, CustomerID=customer_id).first()
+        if not order:
+            return jsonify({"msg": "Không tìm thấy đơn hàng"}), 404
+        if order.Status == "canceled":
+            return jsonify({"msg": "Đơn hàng đã được hủy trước đó"}), 400
+        if order.Status == "success":
+            return jsonify({"msg": "Không thể hủy đơn hàng đã thanh toán"}), 400
+        if order.Status == "approved":
+            return jsonify({"msg": "Không thể hủy, đơn hàng đã được duyệt ,vui lòng liên hệ bộ phận CSKH"}), 400
+
+        # Cập nhật trạng thái + ghi chú
+        order.Status = "canceled"
+        order.Note = reason or "Khách hàng không cung cấp lý do"
+        session.commit()
+
+        return jsonify({
+            "msg": "✅ Đơn hàng đã được hủy",
+            "OrderID": order.OrderID,
+            "Note": order.Note
+        }), 200
+
+    except Exception as e:
+        session.rollback()
+        return jsonify({"msg": str(e)}), 500
+# TÌm Kiếm 
+@service_blueprint.route('/search_service', methods=['GET'])
+def search_service_by_name():
+    try:
+        keyword = request.args.get("keyword", "").strip()
+
+        if not keyword:
+            return jsonify({"msg": "Vui lòng nhập từ khóa tìm kiếm"}), 400
+
+        session = db_manager.get_session()
+
+        results = (
+            session.query(Service)
+            .filter(Service.Name.ilike(f"%{keyword}%"))
+            .all()
+        )
+
+        if not results:
+            return jsonify({"msg": "Không tìm thấy gói phù hợp"}), 404
+
+        response_data = []
+
+        for s in results:
+            # Lấy giá gói 1 tháng (duration = 1)
+            price = (
+                session.query(Price)
+                .filter_by(ServiceID=s.ServiceID, Duration=1, Status='active')
+                .first()
+            )
+
+            # ❌ Nếu không có giá -> bỏ qua
+            if not price:
+                continue
+
+            # Lấy tên danh mục (quan hệ là .category, không phải .Category)
+            category_name = s.category.CategoryName if s.category else None
+
+            response_data.append({
+                "ServiceID": s.ServiceID,
+                "Name": s.Name,
+                "Speed": s.Speed,
+                "Area": s.Area,
+                "Features": s.Features,
+                "Channels": s.Channels,
+                "CategoryID": s.CategoryID,
+                "CategoryName": category_name,
+                "PriceAmount": float(price.PriceAmount)
+            })
+
+        return jsonify(response_data), 200
+
+    except Exception as e:
+        return jsonify({"msg": str(e)}), 500
+    
+#Lọc theo giá 
+@service_blueprint.route('/filterby_price', methods=['POST'])
+def filter_services_by_price():
+    try:
+        data = request.get_json()
+        min_price = data.get("min_price")
+        max_price = data.get("max_price")
+
+        if min_price is None or max_price is None:
+            return jsonify({"msg": "Vui lòng cung cấp min_price và max_price"}), 400
+
+        session = db_manager.get_session()
+
+        # Truy vấn theo khoảng giá và join với bảng Category để lấy CategoryName
+        results = (
+            session.query(Service, Price, Category)
+            .join(Price, Service.ServiceID == Price.ServiceID)
+            .join(Category, Service.CategoryID == Category.CategoryID)
+            .filter(Price.PriceAmount >= min_price)
+            .filter(Price.PriceAmount <= max_price)
+            .all()
+        )
+
+        if not results:
+            return jsonify({"msg": "Không tìm thấy gói phù hợp với mức giá"}), 404
+
+        response_data = []
+        for service, price, category in results:
+            response_data.append({
+                "ServiceID": service.ServiceID,
+                "Name": service.Name,
+                "Speed": service.Speed,
+                "Area": service.Area,
+                "PriceAmount": float(price.PriceAmount),
+                "Duration": price.Duration,  # Thêm thời gian (tháng)
+                "BonusMonths": price.BonusMonths,  # Thêm số tháng bonus
+                "Currency": price.Currency,
+                "CategoryName": category.CategoryName,  # Lấy CategoryName
+                "Channels": service.Channels  # Thêm số kênh
+            })
+
+        return jsonify(response_data), 200
+
+    except Exception as e:
+        return jsonify({"msg": str(e)}), 500
+    
+@service_blueprint.route('/create_support_ticket', methods=['POST'])
+@jwt_required()
+def create_support_ticket():
+    try:
+        identity = get_jwt_identity()
+        if identity.get("role", "").lower() != "customer":
+            return jsonify({"msg": "Chỉ khách hàng mới có thể gửi yêu cầu hỗ trợ"}), 403
+
+        customer_id = identity.get("CustomerID")
+        data = request.get_json()
+
+        subject = data.get("subject")
+        description = data.get("description")
+        order_id = data.get("order_id")      # Có thể None nếu không liên quan đến đơn
+        subscription_id = data.get("subscription_id")  # Có thể None
+        employee_id = None  # Có thể phân bổ sau khi nhân viên tiếp nhận
+
+        if not subject or not description:
+            return jsonify({"msg": "Tiêu đề và nội dung mô tả là bắt buộc"}), 400
+
+        session = db_manager.get_session()
+
+        ticket = SupportTicket(
+            CustomerID=customer_id,
+            SubscriptionID=subscription_id,
+            OrderID=order_id,
+            EmployeeID=employee_id,
+            Subject=subject,
+            Description=description,
+            Status='open',
+            CreatedAt=datetime.utcnow()
+        )
+
+        session.add(ticket)
+        session.commit()
+
+        return jsonify({
+            "msg": "Yêu cầu hỗ trợ đã được tạo thành công",
+            "TicketID": ticket.TicketID,
+            "Status": ticket.Status,
+            "CreatedAt": str(ticket.CreatedAt)
+        }), 201
+
+    except Exception as e:
+        session.rollback()
+        return jsonify({"msg": str(e)}), 500
+    
+@service_blueprint.route('/support_ticket/<int:customer_id>', methods=['GET'])
+def get_support_tickets_by_customer(customer_id):
+    session = db_manager.get_session()
+    try:
+        tickets = session.query(SupportTicket).filter_by(CustomerID=customer_id).all()
+
+        result = []
+        for ticket in tickets:
+            result.append({
+                "TicketID": ticket.TicketID,
+                "CustomerID": ticket.CustomerID,
+                "SubscriptionID": ticket.SubscriptionID,
+                "OrderID": ticket.OrderID,
+                "EmployeeID": ticket.EmployeeID,
+                "Subject": ticket.Subject,
+                "Description": ticket.Description,
+                "Status": ticket.Status,
+                "CreatedAt": ticket.CreatedAt.strftime("%Y-%m-%d %H:%M:%S") if ticket.CreatedAt else None,
+                "Resolution": ticket.Resolution,
+                "ResolvedAt": ticket.ResolvedAt.strftime("%Y-%m-%d %H:%M:%S") if ticket.ResolvedAt else None
+            })
+
+        return jsonify(result), 200
+
+    except Exception as e:
+        return jsonify({"msg": str(e)}), 500
+    finally:
+        session.close()
 
